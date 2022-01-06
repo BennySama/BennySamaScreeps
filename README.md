@@ -1,2 +1,2 @@
 ## Explanation
-Scripts based by [ATanner](https://www.youtube.com/watch?v=N7KMOG8C5vA)
+Codebase by [Ayden Rennaker](https://github.com/AydenRennaker/screeps-starter)
