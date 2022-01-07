@@ -75,8 +75,7 @@ var roleBuilder = {
       Game.creeps,
       (creep) => creep.memory.role == "builder" && creep.room.name == room.name
     );
-
-    if (builders.length < 2 && room.find(FIND_CONSTRUCTION_SITES) > 0) {
+    if (builders.length < 2 && room.find(FIND_CONSTRUCTION_SITES).length > 0) {
       return true;
     }
   },

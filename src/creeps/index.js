@@ -1,5 +1,6 @@
 let creepLogic = {
   harvester: require("./harvester"),
+  hauler: require("./hauler"),
   transferer: require("./transferer"),
   upgrader: require("./upgrader"),
   builder: require("./builder"),

@@ -25,14 +25,16 @@ var transferer = {
       // if we found one
       if (structure != undefined) {
         // try to transfer energy, if it is not in range
-        if (creep.transfer(structure, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-          // move towards it
-          creep.moveTo(structure);
-        }
+        for (const resourceType in creep.store) {
+
+          if (creep.transfer(structure, resourceType) == OK) break
+          else creep.moveTo(structure);
+          }
+      
       }
     } else {
       var source = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES);
-      if (creep.pickup(source, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+      if (creep.pickup(source) == ERR_NOT_IN_RANGE) {
         creep.moveTo(source, { visualizePathStyle: { stroke: "#ffaa00" } });
       }
     }

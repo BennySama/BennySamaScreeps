@@ -49,7 +49,7 @@ function __getDirname(path) {
 	return require("path").resolve(__dirname + "/" + path + "/../");
 }
 /********** End of header **********/
-/********** Start module 0: P:\screeps-starter-master\src\main.js **********/
+/********** Start module 0: P:\Screeps\src\main.js **********/
 __modules[0] = function(module, exports) {
 let creepLogic = __require(1,0);
 let roomLogic = __require(2,0);
@@ -88,17 +88,18 @@ module.exports.loop = function () {
 
 return module.exports;
 }
-/********** End of module 0: P:\screeps-starter-master\src\main.js **********/
-/********** Start module 1: P:\screeps-starter-master\src\creeps\index.js **********/
+/********** End of module 0: P:\Screeps\src\main.js **********/
+/********** Start module 1: P:\Screeps\src\creeps\index.js **********/
 __modules[1] = function(module, exports) {
 let creepLogic = {
   harvester: __require(4,1),
-  transferer: __require(5,1),
-  upgrader: __require(6,1),
-  builder: __require(7,1),
-  repairer: __require(8,1),
-  signer: __require(9,1),
-  remoteharvester: __require(10,1),
+  hauler: __require(5,1),
+  transferer: __require(6,1),
+  upgrader: __require(7,1),
+  builder: __require(8,1),
+  repairer: __require(9,1),
+  signer: __require(10,1),
+  remoteharvester: __require(11,1),
   
 };
 
@@ -106,30 +107,30 @@ module.exports = creepLogic;
 
 return module.exports;
 }
-/********** End of module 1: P:\screeps-starter-master\src\creeps\index.js **********/
-/********** Start module 2: P:\screeps-starter-master\src\room\index.js **********/
+/********** End of module 1: P:\Screeps\src\creeps\index.js **********/
+/********** Start module 2: P:\Screeps\src\room\index.js **********/
 __modules[2] = function(module, exports) {
 let roomLogic = {
-    spawning:     __require(11,2),
+    spawning:     __require(12,2),
 }
 
 module.exports = roomLogic;
 return module.exports;
 }
-/********** End of module 2: P:\screeps-starter-master\src\room\index.js **********/
-/********** Start module 3: P:\screeps-starter-master\src\prototypes\index.js **********/
+/********** End of module 2: P:\Screeps\src\room\index.js **********/
+/********** Start module 3: P:\Screeps\src\prototypes\index.js **********/
 __modules[3] = function(module, exports) {
 let files = {
-    creep: __require(12,3)
+    creep: __require(13,3)
 }
 return module.exports;
 }
-/********** End of module 3: P:\screeps-starter-master\src\prototypes\index.js **********/
-/********** Start module 4: P:\screeps-starter-master\src\creeps\harvester.js **********/
+/********** End of module 3: P:\Screeps\src\prototypes\index.js **********/
+/********** Start module 4: P:\Screeps\src\creeps\harvester.js **********/
 __modules[4] = function(module, exports) {
 var harvester = {
   /** @param {Creep} creep **/
-  calc: __require(13,4),
+  calc: __require(14,4),
   run: function (creep) {
     if (creep.memory.deliver && creep.store[RESOURCE_ENERGY] == 0) {
       creep.memory.deliver = false;
@@ -215,12 +216,104 @@ module.exports = harvester;
 
 return module.exports;
 }
-/********** End of module 4: P:\screeps-starter-master\src\creeps\harvester.js **********/
-/********** Start module 5: P:\screeps-starter-master\src\creeps\transferer.js **********/
+/********** End of module 4: P:\Screeps\src\creeps\harvester.js **********/
+/********** Start module 5: P:\Screeps\src\creeps\hauler.js **********/
 __modules[5] = function(module, exports) {
+var hauler = {
+  /** @param {Creep} creep **/
+  calc: __require(14,5),
+  run: function (creep) {
+    if (creep.memory.working == true && creep.carry.energy == 0) {
+      creep.memory.working = false;
+    }
+    else if (creep.memory.working == false && creep.carry.energy > 0) {
+      creep.memory.working = true;
+    }
+
+    if (creep.memory.working) {
+        var targets_important = creep.room.find(FIND_STRUCTURES, {
+            filter: (structure) => {
+              return (
+                (structure.structureType == STRUCTURE_EXTENSION ||
+                  structure.structureType == STRUCTURE_SPAWN ||
+                  /*structure.structureType == STRUCTURE_CONTAINER ||*/
+                  structure.structureType == STRUCTURE_TOWER) &&
+                structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+              );
+            },
+          });
+          var targets_important2 = creep.pos.findClosestByRange(FIND_STRUCTURES, {
+            filter: (structure) => {
+              return (
+                (structure.structureType == STRUCTURE_EXTENSION ||
+                  structure.structureType == STRUCTURE_SPAWN ||
+                  /*structure.structureType == STRUCTURE_CONTAINER ||*/
+                  structure.structureType == STRUCTURE_TOWER) &&
+                structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+              );
+            },
+          });
+
+          if (targets_important.length > 0) {
+            if (
+              creep.transfer(targets_important2, RESOURCE_ENERGY) ==
+              ERR_NOT_IN_RANGE
+            ) {
+              creep.moveTo(targets_important2, {
+                visualizePathStyle: { stroke: "#ffffff" },
+              });
+            }
+          } 
+          else 
+          {
+              
+          }
+
+    } else {
+        var containers = creep.room.find(FIND_STRUCTURES, {
+            filter: (s) =>
+              (s.structureType == STRUCTURE_CONTAINER || s.structureType == STRUCTURE_STORAGE) && s.store[RESOURCE_ENERGY] > 0,
+          });
+          if (
+            creep.withdraw(containers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE
+          ) {
+            creep.moveTo(containers[0], {
+              visualizePathStyle: { stroke: "#ff0000" },
+            });
+          }      
+    }
+  },
+  spawn: function (room) {
+    var haulers = _.filter(
+      Game.creeps,
+      (creep) => creep.memory.role == "hauler"
+    );
+    if (haulers.length < 1) {
+      return true;
+    }
+  },
+  spawnData: function (room) {
+    let body = this.calc.calchauler(room.energyCapacityAvailable);
+    let name = "Hauler" + Game.time;
+    let memory = {
+      role: "hauler",
+      working: false,
+    };
+
+    return { name, body, memory };
+  },
+};
+
+module.exports = hauler;
+
+return module.exports;
+}
+/********** End of module 5: P:\Screeps\src\creeps\hauler.js **********/
+/********** Start module 6: P:\Screeps\src\creeps\transferer.js **********/
+__modules[6] = function(module, exports) {
 var transferer = {
   /** @param {Creep} creep **/
-  calc: __require(13,5),
+  calc: __require(14,6),
   run: function (creep) {
     if (creep.memory.working == true && creep.carry.energy == 0) {
       creep.memory.working = false;
@@ -236,13 +329,16 @@ var transferer = {
           s.store.getFreeCapacity(RESOURCE_ENERGY) > 0,
       });
       if (structure != undefined) {
-        if (creep.transfer(structure, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-          creep.moveTo(structure);
-        }
+        for (const resourceType in creep.store) {
+
+          if (creep.transfer(structure, resourceType) == OK) break
+          else creep.moveTo(structure);
+          }
+      
       }
     } else {
       var source = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES);
-      if (creep.pickup(source, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+      if (creep.pickup(source) == ERR_NOT_IN_RANGE) {
         creep.moveTo(source, { visualizePathStyle: { stroke: "#ffaa00" } });
       }
     }
@@ -272,13 +368,13 @@ module.exports = transferer;
 
 return module.exports;
 }
-/********** End of module 5: P:\screeps-starter-master\src\creeps\transferer.js **********/
-/********** Start module 6: P:\screeps-starter-master\src\creeps\upgrader.js **********/
-__modules[6] = function(module, exports) {
+/********** End of module 6: P:\Screeps\src\creeps\transferer.js **********/
+/********** Start module 7: P:\Screeps\src\creeps\upgrader.js **********/
+__modules[7] = function(module, exports) {
 var roleUpgrader = {
   /** @param {Creep} creep **/
   /** @param {Creep} creep **/
-  calc: __require(13,6),
+  calc: __require(14,7),
   run: function (creep) {
     if (creep.memory.upgrading && creep.store[RESOURCE_ENERGY] == 0) {
       creep.memory.upgrading = false;
@@ -319,7 +415,7 @@ var roleUpgrader = {
       (creep) => creep.memory.role == "upgrader" && creep.room.name == room.name
     );
 
-    if (upgraders.length < 2) {
+    if (upgraders.length < 1) {
       return true;
     }
   },
@@ -336,12 +432,12 @@ module.exports = roleUpgrader;
 
 return module.exports;
 }
-/********** End of module 6: P:\screeps-starter-master\src\creeps\upgrader.js **********/
-/********** Start module 7: P:\screeps-starter-master\src\creeps\builder.js **********/
-__modules[7] = function(module, exports) {
+/********** End of module 7: P:\Screeps\src\creeps\upgrader.js **********/
+/********** Start module 8: P:\Screeps\src\creeps\builder.js **********/
+__modules[8] = function(module, exports) {
 var roleBuilder = {
   /** @param {Creep} creep **/
-  calc: __require(13,7),
+  calc: __require(14,8),
   run: function (creep) {
     var containers = creep.room.find(FIND_STRUCTURES, {
       filter: (s) =>
@@ -413,7 +509,7 @@ var roleBuilder = {
       Game.creeps,
       (creep) => creep.memory.role == "builder" && creep.room.name == room.name
     );
-
+console.log(room.find(FIND_CONSTRUCTION_SITES).length);
     if (builders.length < 2 && room.find(FIND_CONSTRUCTION_SITES) > 0) {
       return true;
     }
@@ -431,12 +527,12 @@ module.exports = roleBuilder;
 
 return module.exports;
 }
-/********** End of module 7: P:\screeps-starter-master\src\creeps\builder.js **********/
-/********** Start module 8: P:\screeps-starter-master\src\creeps\repairer.js **********/
-__modules[8] = function(module, exports) {
+/********** End of module 8: P:\Screeps\src\creeps\builder.js **********/
+/********** Start module 9: P:\Screeps\src\creeps\repairer.js **********/
+__modules[9] = function(module, exports) {
 var roleRepairer = {
   /** @param {Creep} creep **/
-  calc: __require(13,8),
+  calc: __require(14,9),
   run: function (creep) {
     var containers = creep.room.find(FIND_STRUCTURES, {
       filter: (s) =>
@@ -515,10 +611,10 @@ module.exports = roleRepairer;
 
 return module.exports;
 }
-/********** End of module 8: P:\screeps-starter-master\src\creeps\repairer.js **********/
-/********** Start module 9: P:\screeps-starter-master\src\creeps\signer.js **********/
-__modules[9] = function(module, exports) {
-const { isUndefined } = __require(14,9);
+/********** End of module 9: P:\Screeps\src\creeps\repairer.js **********/
+/********** Start module 10: P:\Screeps\src\creeps\signer.js **********/
+__modules[10] = function(module, exports) {
+const { isUndefined } = __require(15,10);
 
 let signstring = "Newbie on the road, peaceful player";
 var signer = {
@@ -580,52 +676,52 @@ var signer = {
   
 return module.exports;
 }
-/********** End of module 9: P:\screeps-starter-master\src\creeps\signer.js **********/
-/********** Start module 10: P:\screeps-starter-master\src\creeps\remoteharvester.js **********/
-__modules[10] = function(module, exports) {
+/********** End of module 10: P:\Screeps\src\creeps\signer.js **********/
+/********** Start module 11: P:\Screeps\src\creeps\remoteharvester.js **********/
+__modules[11] = function(module, exports) {
 var remoteharvester = {
   spawn_amount: 3,
-  /** @param {Creep} creep **/
-  calc: __require(13,10),
+  calc: __require(14,11),
   run: function (creep) {
-      if (Game.time % 2 == 0) 
-      creep.say("Beep");
+    if (Game.time % 2 == 0) creep.say("Beep");
     else creep.say("Boop");
 
     if (creep.memory.working == true && creep.carry.energy == 0) {
       creep.memory.working = false;
-  }
-  else if (creep.memory.working == false && creep.carry.energy == creep.carryCapacity) {
+    } else if (
+      creep.memory.working == false &&
+      creep.carry.energy == creep.carryCapacity
+    ) {
       creep.memory.working = true;
-  }
-      if (creep.memory.working == true) {
-        if (creep.room.name == creep.memory.home) {
-            var structure = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
-                filter: (s) => (s.structureType == STRUCTURE_STORAGE || s.structureType == STRUCTURE_CONTAINER)
-                             && s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
-            });
-            if (structure != undefined) {
-                if (creep.transfer(structure, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(structure);
-                }
-            }
-        }
-        else {
-            var exit = creep.room.findExitTo(creep.memory.home);
-            creep.moveTo(creep.pos.findClosestByRange(exit));
-        }
     }
-    else {
-        if (creep.room.name == creep.memory.target) {
-            var source = creep.pos.findClosestByPath(FIND_SOURCES_ACTIVE);
-            if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(source);
-            }
+    if (creep.memory.working == true) {
+      if (creep.room.name == creep.memory.home) {
+        var structure = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
+          filter: (s) =>
+            (s.structureType == STRUCTURE_STORAGE ||
+              s.structureType == STRUCTURE_CONTAINER) &&
+            s.store.getFreeCapacity(RESOURCE_ENERGY) > 0,
+        });
+        if (structure != undefined) {
+          if (creep.transfer(structure, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+            creep.moveTo(structure);
+          }
         }
-        else {
-            var exit = creep.room.findExitTo(creep.memory.target);
-            creep.moveTo(creep.pos.findClosestByRange(exit));
+      } else {
+        var exit = creep.room.findExitTo(creep.memory.home);
+        creep.moveTo(creep.pos.findClosestByRange(exit));
+      }
+    } else {
+      if (creep.room.name == creep.memory.target) {
+        var source = creep.pos.findClosestByPath(FIND_SOURCES_ACTIVE);
+
+        if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
+          creep.moveTo(source);
         }
+      } else {
+        var exit = creep.room.findExitTo(creep.memory.target);
+        creep.moveTo(creep.pos.findClosestByRange(exit));
+      }
     }
   },
   spawn: function (room) {
@@ -634,28 +730,27 @@ var remoteharvester = {
       Game.creeps,
       (creep) => creep.memory.role == "remoteharvester"
     );
-    if (remoteharvesters.length < (this.spawn_amount*adjacent_rooms.length)) {
+    if (remoteharvesters.length < this.spawn_amount * adjacent_rooms.length) {
       return true;
     }
   },
   spawnData: function (room) {
- let body = this.calc.remotecalc(room.energyCapacityAvailable, 2);
-   let name = "RemoteHarvester" + Game.time;
+    let body = this.calc.remotecalc(room.energyCapacityAvailable, 2);
+    let name = "RemoteHarvester" + Game.time;
     var adjacent_rooms = Object.values(Game.map.describeExits(room.name));
     var target_room = "";
-    for(let i = 0;i<adjacent_rooms.length;i++)
-    {
+    for (let i = 0; i < adjacent_rooms.length; i++) {
       var remoteharvesters = _.filter(
         Game.creeps,
         (creep) => creep.memory.target == adjacent_rooms[i]
       );
-      if(remoteharvesters.length < this.spawn_amount)
-      {
+      if (remoteharvesters.length < this.spawn_amount) {
         console.log(adjacent_rooms[i]);
         target_room = adjacent_rooms[i];
-        break
+        break;
       }
-    }    let memory = {
+    }
+    let memory = {
       role: "remoteharvester",
       home: room.name,
       target: target_room,
@@ -670,10 +765,10 @@ module.exports = remoteharvester;
 
 return module.exports;
 }
-/********** End of module 10: P:\screeps-starter-master\src\creeps\remoteharvester.js **********/
-/********** Start module 11: P:\screeps-starter-master\src\room\spawning.js **********/
-__modules[11] = function(module, exports) {
-let creepLogic = __require(1,11);
+/********** End of module 11: P:\Screeps\src\creeps\remoteharvester.js **********/
+/********** Start module 12: P:\Screeps\src\room\spawning.js **********/
+__modules[12] = function(module, exports) {
+let creepLogic = __require(1,12);
 let creepTypes = _.keys(creepLogic);
 
 function spawnCreeps(room) {
@@ -728,9 +823,9 @@ module.exports = spawnCreeps;
 
 return module.exports;
 }
-/********** End of module 11: P:\screeps-starter-master\src\room\spawning.js **********/
-/********** Start module 12: P:\screeps-starter-master\src\prototypes\creep.js **********/
-__modules[12] = function(module, exports) {
+/********** End of module 12: P:\Screeps\src\room\spawning.js **********/
+/********** Start module 13: P:\Screeps\src\prototypes\creep.js **********/
+__modules[13] = function(module, exports) {
 Creep.prototype.sayHello = function sayHello() {
   this.say("Hello", true);
 };
@@ -741,9 +836,9 @@ Creep.prototype.bodyConstruct = function bodyConstruct()
 }
 return module.exports;
 }
-/********** End of module 12: P:\screeps-starter-master\src\prototypes\creep.js **********/
-/********** Start module 13: P:\screeps-starter-master\src\creeps\bodypart.js **********/
-__modules[13] = function(module, exports) {
+/********** End of module 13: P:\Screeps\src\prototypes\creep.js **********/
+/********** Start module 14: P:\Screeps\src\creeps\bodypart.js **********/
+__modules[14] = function(module, exports) {
 var calc = {
 calc: function(energy)
 {
@@ -802,9 +897,9 @@ remotecalc: function(energy, workParts)
   
 return module.exports;
 }
-/********** End of module 13: P:\screeps-starter-master\src\creeps\bodypart.js **********/
-/********** Start module 14: P:\screeps-starter-master\node_modules\lodash\index.js **********/
-__modules[14] = function(module, exports) {
+/********** End of module 14: P:\Screeps\src\creeps\bodypart.js **********/
+/********** Start module 15: P:\Screeps\node_modules\lodash\index.js **********/
+__modules[15] = function(module, exports) {
 /**
  * @license
  * lodash 3.10.1 (Custom Build) <https://lodash.com/>
@@ -12992,7 +13087,7 @@ __modules[14] = function(module, exports) {
 
 return module.exports;
 }
-/********** End of module 14: P:\screeps-starter-master\node_modules\lodash\index.js **********/
+/********** End of module 15: P:\Screeps\node_modules\lodash\index.js **********/
 /********** Footer **********/
 if(typeof module === "object")
 	module.exports = __require(0);
