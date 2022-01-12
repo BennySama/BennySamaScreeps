@@ -54,10 +54,16 @@ var remoteharvester = {
     }
   },
   spawnData: function (room) {
+    var containers = room.find(FIND_STRUCTURES, {
+      filter: (s) =>
+        (s.structureType == STRUCTURE_STORAGE) && s.store[RESOURCE_ENERGY] > 0,
+    });
     let body = this.calc.remotecalc(room.energyCapacityAvailable, room.controller.level);
     let name = "RemoteHarvester" + Game.time;
-    var adjacent_rooms = Object.values(Game.map.describeExits(room.name));
+    var adjacent_rooms = Object.values(Game.map.describeExits(Game.spawns.Spawn1.room.name));
     var target_room = "";
+    if(containers.length > 0)
+    {
     for (let i = 0; i < adjacent_rooms.length; i++) {
       var remoteharvesters = _.filter(
         Game.creeps,
@@ -77,6 +83,7 @@ var remoteharvester = {
     };
 
     return { name, body, memory };
+  }
   },
 };
 

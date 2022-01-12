@@ -46,7 +46,11 @@ var transferer = {
       Game.creeps,
       (creep) => creep.memory.role == "transferer"
     );
-    if (transferers.length < 1) {
+    var containers = room.find(FIND_STRUCTURES, {
+      filter: (s) =>
+        (s.structureType == STRUCTURE_CONTAINER || s.structureType == STRUCTURE_STORAGE) && s.store[RESOURCE_ENERGY] > 0,
+    });
+    if (transferers.length < 1 && containers.length > 0) {
       return true;
     }
   },

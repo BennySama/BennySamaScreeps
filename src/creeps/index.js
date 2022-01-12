@@ -5,7 +5,7 @@ let creepLogic = {
   upgrader: require("./upgrader"),
   builder: require("./builder"),
   repairer: require("./repairer"),
-  signer: require("./signer"),
+ // signer: require("./signer"),
   remoteharvester: require("./remoteharvester"),
   
 };

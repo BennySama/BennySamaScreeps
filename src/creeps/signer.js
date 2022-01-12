@@ -5,7 +5,7 @@ var signer = {
 
     /** @param {Creep} creep **/
     run: function (creep) {
-        if(typeof JSON.stringify(creep.room.controller.sign.text) === undefined)
+        if(!creep.room.controller.sign || creep.room.controller.sign.text !== signstring)
         {
         if(creep.room.controller) {
             if(creep.signController(creep.room.controller, signstring) == ERR_NOT_IN_RANGE) {
@@ -30,7 +30,7 @@ var signer = {
           creep.memory.role == "signer" && creep.room.name == room.name
       );
   
-      if (signers.length < 1 && typeof JSON.stringify(room.controller.sign.text) === undefined) {
+      if (signers.length < 1 && (!creep.room.controller.sign || creep.room.controller.sign.text !== signstring)) {
         return true;
       }
     },
