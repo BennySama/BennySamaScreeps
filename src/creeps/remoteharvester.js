@@ -54,7 +54,7 @@ var remoteharvester = {
     }
   },
   spawnData: function (room) {
-    let body = this.calc.remotecalc(room.energyCapacityAvailable, 2);
+    let body = this.calc.remotecalc(room.energyCapacityAvailable, room.controller.level);
     let name = "RemoteHarvester" + Game.time;
     var adjacent_rooms = Object.values(Game.map.describeExits(room.name));
     var target_room = "";

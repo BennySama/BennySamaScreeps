@@ -2,6 +2,7 @@ var transferer = {
   /** @param {Creep} creep **/
   calc: require("./bodypart"),
   run: function (creep) {
+    
     if (creep.memory.working == true && creep.carry.energy == 0) {
       // switch state
       creep.memory.working = false;
